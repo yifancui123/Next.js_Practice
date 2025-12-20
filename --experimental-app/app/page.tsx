@@ -1,3 +1,6 @@
+import TodoList from "./TodoList";
+import AddTask from "./AddTask";
+
 export default function Home(){
   return(
     <main className="max-w-4xl mx-auto mt-4">
@@ -5,6 +8,7 @@ export default function Home(){
         <h1 className="text-2xl font-bold">Todo List App</h1>
         <AddTask/>
       </div>
+      <TodoList/>
     </main>
   );
 }
