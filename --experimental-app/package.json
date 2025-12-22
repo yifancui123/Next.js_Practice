@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "json-server": "json-server --watch data/todos.json --port 3001"
+
   },
   "dependencies": {
-    "daisyui": "^5.5.1-beta.2",
+    "@tailwindcss/vite": "^4.1.18",
     "next": "16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1",
@@ -20,9 +22,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "daisyui": "^5.5.14",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
-    "tailwindcss": "^4",
+    "json-server": "^1.0.0-beta.3",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5"
   }
 }
