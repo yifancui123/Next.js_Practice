@@ -1,12 +1,5 @@
 import { ITask } from "@/types/tasks";
 import Task from "./Task";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 interface TodoListProps {
   tasks: ITask[]
@@ -14,19 +7,23 @@ interface TodoListProps {
 
 const TodoList: React.FC<TodoListProps> = ( {tasks} ) => {
   return(
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Tasks</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {tasks.map(task => (
-          <Task key={task.id} task={task} />
-        ))}
-      </TableBody>
-    </Table>
+    <div className="overflow-x-auto">
+      <table className="table">
+        {/* head */}
+        <thead>
+          <tr>
+            <th>Tasks</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.map(task => ( 
+            <Task key={task.id} task={task} />
+          ))}
+
+        </tbody>
+      </table>
+    </div>
   )
 }
 export default TodoList;
