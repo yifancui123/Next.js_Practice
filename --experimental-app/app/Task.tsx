@@ -3,10 +3,21 @@
 import { ITask } from "@/types/tasks";
 import { CiEdit } from "react-icons/ci";
 import { FaRegTrashCan } from "react-icons/fa6";
-import Modal from "./Modal";
 import { FormEventHandler, useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteTodo, editTodo } from "@/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { TableCell, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 
 interface TaskProps {
   task: ITask;
@@ -14,67 +25,84 @@ interface TaskProps {
 
 const Task: React.FC<TaskProps> = ( {task} ) => {
   const router = useRouter();
-  const [modalOpenEdit, setModalOpenEdit] = useState<boolean>(false);
-  const [modalOpenDeleted, setModalOpenDeleted] = useState<boolean>(false);
+  const [dialogOpenEdit, setDialogOpenEdit] = useState<boolean>(false);
+  const [dialogOpenDelete, setDialogOpenDelete] = useState<boolean>(false);
   const [taskToEdit, setTaskToEdit] = useState<string>(task.text);
 
-    const handleEdit: FormEventHandler<HTMLFormElement>=async (e)=> {
-      e.preventDefault();
-      await editTodo({
-        id: task.id,
-        text: taskToEdit,
-      });
-      setModalOpenEdit(false);
-      router.refresh();
+  const handleEdit: FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    await editTodo({
+      id: task.id,
+      text: taskToEdit,
+    });
+    setDialogOpenEdit(false);
+    router.refresh();
   }
 
   const handleDeleteTask = async (id: string) => {
     await deleteTodo(id);
-    setModalOpenDeleted(false);
+    setDialogOpenDelete(false);
     router.refresh();
   };
 
   return (
-    <tr key = {task.id}>
-      <td className="w-full">{task.text}</td>
-      <td className="flex gap-5">
+    <TableRow key={task.id}>
+      <TableCell className="w-full">{task.text}</TableCell>
+      <TableCell className="flex gap-5">
 
-        <CiEdit 
-          onClick = { () => setModalOpenEdit(true) } 
-          cursor="pointer" 
-          className="text-blue-500" 
-          size={15}
+        <CiEdit
+          onClick={() => setDialogOpenEdit(true)}
+          cursor="pointer"
+          className="text-blue-500 hover:text-blue-700 cursor-pointer"
+          size={18}
         />
 
-        <Modal modalOpen={modalOpenEdit} setModalOpen={setModalOpenEdit}>
-          <form onSubmit={handleEdit}>
-            <h3 className="font-bold text-lg">Edit New Task</h3>
-            <div className="modal-action">
-              <input
+        <Dialog open={dialogOpenEdit} onOpenChange={setDialogOpenEdit}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Task</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleEdit} className="flex flex-col gap-4">
+              <Input
                 value={taskToEdit}
                 onChange={(e) => setTaskToEdit(e.target.value)}
-                type = "text"
+                type="text"
                 placeholder="Type Here"
-                className="input input-bordered w-full"
+                className="w-full"
               />
-              <button type="submit" className="btn">Submit</button>
-            </div>         
-          </form>
-        </Modal> 
+              <Button type="submit">Submit</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
 
-        <FaRegTrashCan onClick={() => setModalOpenDeleted(true)} cursor="pointer" className="text-red-500" size={15}/>
+        <FaRegTrashCan
+          onClick={() => setDialogOpenDelete(true)}
+          cursor="pointer"
+          className="text-red-500 hover:text-red-700 cursor-pointer"
+          size={18}
+        />
 
-        <Modal modalOpen={modalOpenDeleted} setModalOpen={setModalOpenDeleted}>
-          <h3 className="text-lg">Do you really want to delete this task?</h3>
-          <div className="modal-action">
-            <button 
-              onClick={() => handleDeleteTask(task.id)}
-              className="btn">YES</button>
-          </div>
-        </Modal> 
+        <Dialog open={dialogOpenDelete} onOpenChange={setDialogOpenDelete}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Task</DialogTitle>
+              <DialogDescription>
+                Do you really want to delete this task? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setDialogOpenDelete(false)} variant="outline">
+                Cancel
+              </Button>
+              <Button onClick={() => handleDeleteTask(task.id)} variant="destructive">
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-        </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 };
 
