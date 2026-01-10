@@ -2,6 +2,7 @@
 
 import { IoAddCircle } from "react-icons/io5";
 import { FormEventHandler, useState } from "react";
+import { useRouter } from "next/navigation";
 import { addTodo } from "@/api";
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 
 const AddTask = () => {
-
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [newTaskValue, setNewTaskValue] = useState<string>("");
 
@@ -26,6 +27,7 @@ const AddTask = () => {
     });
     setNewTaskValue("");
     setDialogOpen(false);
+    router.refresh();
   }
 
   return(
