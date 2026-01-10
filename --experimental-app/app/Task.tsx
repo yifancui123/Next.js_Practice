@@ -53,7 +53,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
         <Modal modalOpen={modalOpenEdit} setModalOpen={setModalOpenEdit}>
           <form onSubmit={handleEdit}>
             <h3 className="font-bold text-lg">Edit New Task</h3>
-            <div className="modal-action">
+            <div className="flex flex-col gap-3 mt-4">
               <Input
                 value={taskToEdit}
                 onChange={(e) => setTaskToEdit(e.target.value)}
@@ -70,9 +70,9 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 
         <Modal modalOpen={modalOpenDeleted} setModalOpen={setModalOpenDeleted}>
           <h3 className="text-lg">Do you really want to delete this task?</h3>
-          <div className="modal-action">
-          <Button onClick={() => handleDeleteTask(task.id)} variant="destructive">YES</Button>
-
+          <div className="flex gap-3 mt-4">
+            <Button onClick={() => handleDeleteTask(task.id)} variant="destructive">YES</Button>
+            <Button onClick={() => setModalOpenDeleted(false)} variant="outline">Cancel</Button>
           </div>
         </Modal>
 

@@ -8,11 +8,14 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ( {modalOpen, setModalOpen, children} ) => {
   return (
-    <div className={`modal ${modalOpen ? "modal-open" : ""}`} role="dialog">
-      <div className="modal-box">
+    <div
+      className={`fixed inset-0 z-50 ${modalOpen ? "flex" : "hidden"} items-center justify-center`}
+      role="dialog"
+    >
+      <div className="fixed inset-0 bg-black/50" onClick={()=>setModalOpen(false)} />
+      <div className="relative bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-lg z-50">
         {children}
       </div>
-      <label className="modal-backdrop" onClick={()=>setModalOpen(false)}>Close</label>
     </div>
 
   )
