@@ -27,13 +27,13 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   const router = useRouter();
   const [dialogOpenEdit, setDialogOpenEdit] = useState<boolean>(false);
   const [dialogOpenDelete, setDialogOpenDelete] = useState<boolean>(false);
-  const [taskToEdit, setTaskToEdit] = useState<string>(task.text);
+  const [taskToEdit, setTaskToEdit] = useState<string>(task.title);
 
   const handleEdit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     await editTodo({
       id: task.id,
-      text: taskToEdit,
+      title: taskToEdit,
     });
     setDialogOpenEdit(false);
     router.refresh();
@@ -47,7 +47,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 
   return (
     <TableRow key={task.id}>
-      <TableCell className="w-full">{task.text}</TableCell>
+      <TableCell className="w-full">{task.title}</TableCell>
       <TableCell className="flex gap-5">
 
         <CiEdit
