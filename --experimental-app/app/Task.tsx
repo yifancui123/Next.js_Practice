@@ -7,6 +7,10 @@ import Modal from "./Modal";
 import { FormEventHandler, useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteTodo, editTodo } from "@/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { TableCell, TableRow } from "@/components/ui/table";
+
 
 interface TaskProps {
   task: ITask;
@@ -35,9 +39,9 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   };
 
   return (
-    <tr key = {task.id}>
-      <td className="w-full">{task.text}</td>
-      <td className="flex gap-5">
+    <TableRow key={task.id}>
+      <TableCell className="w-full">{task.text}</TableCell>
+      <TableCell className="flex gap-5">
 
         <CiEdit 
           onClick = { () => setModalOpenEdit(true) } 
@@ -50,14 +54,14 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
           <form onSubmit={handleEdit}>
             <h3 className="font-bold text-lg">Edit New Task</h3>
             <div className="modal-action">
-              <input
+              <Input
                 value={taskToEdit}
                 onChange={(e) => setTaskToEdit(e.target.value)}
-                type = "text"
+                type="text"
                 placeholder="Type Here"
-                className="input input-bordered w-full"
+                className="w-full"
               />
-              <button type="submit" className="btn">Submit</button>
+              <Button type="submit">Submit</Button>
             </div>         
           </form>
         </Modal> 
@@ -67,14 +71,13 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
         <Modal modalOpen={modalOpenDeleted} setModalOpen={setModalOpenDeleted}>
           <h3 className="text-lg">Do you really want to delete this task?</h3>
           <div className="modal-action">
-            <button 
-              onClick={() => handleDeleteTask(task.id)}
-              className="btn">YES</button>
-          </div>
-        </Modal> 
+          <Button onClick={() => handleDeleteTask(task.id)} variant="destructive">YES</Button>
 
-        </td>
-    </tr>
+          </div>
+        </Modal>
+
+      </TableCell>
+    </TableRow>
   );
 };
 
