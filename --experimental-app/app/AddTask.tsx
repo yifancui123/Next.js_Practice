@@ -23,6 +23,7 @@ const AddTaskSchema = z.object ({
       .string()
       .min(2, "Todo title must be at least 2 characters")
       .max(50, "Todo title must be less than 50 characters")
+      .trim();
   });
 
 type AddTaskFormData = z.infer<typeof AddTaskSchema>;
@@ -42,13 +43,17 @@ const AddTask = () => {
   });
 
   const onSubmit = async (data: AddTaskFormData) => {
-    await addTodo({
-      id: uuidv4(),
-      title: data.todoTitle,
-    });
-    reset();
-    setDialogOpen(false);
-    router.refresh();
+    try{
+      await addTodo({
+        id: uuidv4(),
+        title: data.todoTitle,
+      });
+      reset();
+      setDialogOpen(false);
+      router.refresh();
+    }catch(error){
+      alert("Failed to add task, please try again.");
+    }
   }
 
   return(

@@ -61,19 +61,27 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   }, [dialogOpenEdit, task.title, reset]);
 
   const onSubmit = async (data: EditTaskFormData) => {
-    await editTodo({
-      id: task.id,
-      title: data.todoTitle,
-    });
-    setDialogOpenEdit(false);
-    router.refresh();
-  };
+    try{
+      await editTodo({
+        id: task.id,
+        title: data.todoTitle,
+      });
+      setDialogOpenEdit(false);
+      router.refresh();
+    }catch(error){
+      alert("Failed to edit task, please try again.");
+    }
+  }
 
   const handleDeleteTask = async (id: string) => {
-    await deleteTodo(id);
-    setDialogOpenDelete(false);
-    router.refresh();
-  };
+    try{
+      await deleteTodo(id);
+      setDialogOpenDelete(false);
+      router.refresh();
+    }catch(error){
+      alert("Failed to delete task, please try again.");
+    }
+  }
 
   return (
     <TableRow>
@@ -113,7 +121,6 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 
         <FaRegTrashCan
           onClick={() => setDialogOpenDelete(true)}
-          cursor="pointer"
           className="text-red-500 hover:text-red-700 cursor-pointer"
           size={18}
         />
