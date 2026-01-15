@@ -40,6 +40,9 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   const router = useRouter();
   const [dialogOpenEdit, setDialogOpenEdit] = useState<boolean>(false);
   const [dialogOpenDelete, setDialogOpenDelete] = useState<boolean>(false);
+  //Add Loading State for Delete Button
+  const [isDeleting, setIsDeleting] = useState(false);
+
 
   const {
     register,
@@ -74,14 +77,18 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   }
 
   const handleDeleteTask = async (id: string) => {
+    setIsDeleting(true);
     try{
       await deleteTodo(id);
       setDialogOpenDelete(false);
       router.refresh();
     }catch(error){
       alert("Failed to delete task, please try again.");
+    } finally {
+    setIsDeleting(false);
     }
   }
+  
 
   return (
     <TableRow>
@@ -134,11 +141,14 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button onClick={() => setDialogOpenDelete(false)} variant="outline">
+              <Button onClick={() => setDialogOpenDelete(false)} 
+                variant="outline">
                 Cancel
               </Button>
-              <Button onClick={() => handleDeleteTask(task.id)} variant="destructive">
-                Delete
+              <Button onClick={() => handleDeleteTask(task.id)} 
+                variant="destructive" 
+                disabled={isDeleting}>
+                {isDeleting ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </DialogContent>

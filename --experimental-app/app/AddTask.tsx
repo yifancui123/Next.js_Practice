@@ -23,7 +23,7 @@ const AddTaskSchema = z.object ({
       .string()
       .min(2, "Todo title must be at least 2 characters")
       .max(50, "Todo title must be less than 50 characters")
-      .trim();
+      .trim()
   });
 
 type AddTaskFormData = z.infer<typeof AddTaskSchema>;
@@ -36,7 +36,7 @@ const AddTask = () => {
   const {
     register,
     handleSubmit: rhfHandleSubmit,
-    formState: { errors },
+    formState: { errors,isSubmitting },
     reset,
   } = useForm<AddTaskFormData>({
     resolver: zodResolver(AddTaskSchema),
@@ -72,7 +72,8 @@ const AddTask = () => {
               type="text"
               placeholder="Enter todo title"
               className="w-full"
-              {...register("todoTitle")}
+              {...register("todoTitle")} 
+              disabled={isSubmitting}
             />
             {
               errors.todoTitle && (
@@ -81,7 +82,9 @@ const AddTask = () => {
                 </p>
               )
             }
-            <Button type="submit">Submit</Button>
+            <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Adding..." : "Submit"}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
