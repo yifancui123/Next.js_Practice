@@ -3,7 +3,7 @@
 import { ITask } from "@/types/tasks";
 import { CiEdit } from "react-icons/ci";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { FormEventHandler, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { deleteTodo, editTodo } from "@/api";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+const EditTaskSchema = z.object({
+  todoTitle: z
+    .string()
+    .min(2, "Todo title must be at least 2 characters")
+    .max(50, "Todo title must be less than 50 characters")
+    .trim()
+});
+
+type EditTaskFormData = z.infer<typeof EditTaskSchema>;
 
 
 interface TaskProps {
@@ -27,17 +40,34 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   const router = useRouter();
   const [dialogOpenEdit, setDialogOpenEdit] = useState<boolean>(false);
   const [dialogOpenDelete, setDialogOpenDelete] = useState<boolean>(false);
-  const [taskToEdit, setTaskToEdit] = useState<string>(task.title);
 
-  const handleEdit: FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<EditTaskFormData>({
+    resolver: zodResolver(EditTaskSchema),
+    defaultValues: {
+      todoTitle: task.title || ""
+    }
+  });
+
+  // Reset form with current task title when dialog opens
+  useEffect(() => {
+    if (dialogOpenEdit) {
+      reset({ todoTitle: task.title || "" });
+    }
+  }, [dialogOpenEdit, task.title, reset]);
+
+  const onSubmit = async (data: EditTaskFormData) => {
     await editTodo({
       id: task.id,
-      title: taskToEdit,
+      title: data.todoTitle,
     });
     setDialogOpenEdit(false);
     router.refresh();
-  }
+  };
 
   const handleDeleteTask = async (id: string) => {
     await deleteTodo(id);
@@ -46,13 +76,12 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   };
 
   return (
-    <TableRow key={task.id}>
+    <TableRow>
       <TableCell className="w-full">{task.title}</TableCell>
       <TableCell className="flex gap-5">
 
         <CiEdit
           onClick={() => setDialogOpenEdit(true)}
-          cursor="pointer"
           className="text-blue-500 hover:text-blue-700 cursor-pointer"
           size={18}
         />
@@ -62,15 +91,22 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
             <DialogHeader>
               <DialogTitle>Edit Task</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleEdit} className="flex flex-col gap-4">
+            <form onSubmit={rhfHandleSubmit(onSubmit)} className="flex flex-col gap-4">
               <Input
-                value={taskToEdit}
-                onChange={(e) => setTaskToEdit(e.target.value)}
                 type="text"
                 placeholder="Type Here"
                 className="w-full"
+                {...register("todoTitle")}
+                disabled={isSubmitting}
               />
-              <Button type="submit">Submit</Button>
+              {errors.todoTitle && (
+                <p className="text-sm text-red-500">
+                  {errors.todoTitle.message}
+                </p>
+              )}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
