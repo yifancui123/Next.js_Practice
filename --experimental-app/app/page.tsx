@@ -5,7 +5,6 @@ import AddTask from "./AddTask";
 
 export default async function Home(){
  const tasks = await getAllTodos();
- console.log(tasks);
 
 
  return(

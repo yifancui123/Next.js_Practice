@@ -1,7 +1,7 @@
 "use client";
 
 import { IoAddCircle } from "react-icons/io5";
-import { FormEventHandler, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addTodo } from "@/api";
 import { v4 as uuidv4 } from 'uuid';
@@ -13,21 +13,47 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+
+const AddTaskSchema = z.object ({
+    todoTitle: z
+      .string()
+      .min(2, "Todo title must be at least 2 characters")
+      .max(50, "Todo title must be less than 50 characters")
+      .trim()
+  });
+
+type AddTaskFormData = z.infer<typeof AddTaskSchema>;
 
 const AddTask = () => {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [newTaskValue, setNewTaskValue] = useState<string>("");
+  
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    await addTodo({
-      id: uuidv4(),
-      text: newTaskValue,
-    });
-    setNewTaskValue("");
-    setDialogOpen(false);
-    router.refresh();
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors,isSubmitting },
+    reset,
+  } = useForm<AddTaskFormData>({
+    resolver: zodResolver(AddTaskSchema),
+  });
+
+  const onSubmit = async (data: AddTaskFormData) => {
+    try{
+      await addTodo({
+        id: uuidv4(),
+        title: data.todoTitle,
+      });
+      reset();
+      setDialogOpen(false);
+      router.refresh();
+    }catch(error){
+      alert("Failed to add task, please try again.");
+    }
   }
 
   return(
@@ -41,15 +67,24 @@ const AddTask = () => {
           <DialogHeader>
             <DialogTitle>Add new task</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={rhfHandleSubmit(onSubmit)} className="flex flex-col gap-4">
             <Input
-              value={newTaskValue}
-              onChange={e => setNewTaskValue(e.target.value)}
               type="text"
-              placeholder="Type Here"
+              placeholder="Enter todo title"
               className="w-full"
+              {...register("todoTitle")} 
+              disabled={isSubmitting}
             />
-            <Button type="submit">Submit</Button>
+            {
+              errors.todoTitle && (
+                <p className="text-sm text-red-500">
+                  {errors.todoTitle.message}
+                </p>
+              )
+            }
+            <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Adding..." : "Submit"}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
