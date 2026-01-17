@@ -21,6 +21,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea"
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const EditTaskSchema = z.object({
   todoTitle: z
@@ -72,19 +73,24 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
     }
   }, [dialogOpenEdit, task.title, task.description, reset]);
 
-  const onSubmit = async (data: EditTaskFormData) => {
-    try{
-      await editTodo({
+  const queryClient = useQueryClient();
+  const {mutate, isPending} = useMutation({
+    mutationFn: editTodo,
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: [ "todos" ]});
+      setDialogOpenEdit(false);
+    },
+    onError: ()=>{
+      alert("Failed to edit task, please try again.");
+    }
+  });
+
+  const onSubmit = (data: EditTaskFormData) => 
+      mutate({
         id: task.id,
         title: data.todoTitle,
         description: data.description
       });
-      setDialogOpenEdit(false);
-      router.refresh();
-    }catch(error){
-      alert("Failed to edit task, please try again.");
-    }
-  }
 
   const handleDeleteTask = async (id: string) => {
     setIsDeleting(true);
@@ -98,6 +104,9 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
     setIsDeleting(false);
     }
   }
+  // const{data, isPen} = useMutation(
+  //   mutationFn: deleteTodo,
+  // )
   
 
   return (
@@ -139,8 +148,8 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 
               <Textarea placeholder="Edit your description here." {...register("description")} />
 
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save"}
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </form>
           </DialogContent>
