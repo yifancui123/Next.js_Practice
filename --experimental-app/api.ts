@@ -13,7 +13,7 @@ export const getAllTodos = async (): Promise<ITask[]> => {
     if (!res.ok) {
       throw new Error(`Failed to fetch todos: ${res.status} ${res.statusText}`);
     }
-    
+  
     const todos = await res.json();
     return todos;
   } catch (error) {
@@ -81,3 +81,16 @@ export const deleteTodo = async (id:string): Promise<void> =>{
     throw error;
   }
 }
+
+export const addDescription = async (todo: ITask): Promise<ITask> => {
+  const res = await fetch(`${baseUrl}/tasks`,{
+    method:"POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body:JSON.stringify(todo)
+  })
+
+  const newDes = await res.json();
+  return newDes;
+};

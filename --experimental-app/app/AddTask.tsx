@@ -16,6 +16,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
 
 
 const AddTaskSchema = z.object ({
@@ -47,6 +48,7 @@ const AddTask = () => {
       await addTodo({
         id: uuidv4(),
         title: data.todoTitle,
+        //description:
       });
       reset();
       setDialogOpen(false);
@@ -82,6 +84,10 @@ const AddTask = () => {
                 </p>
               )
             }
+
+            <Textarea placeholder="Add your description here." disabled />
+
+            
             <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Adding..." : "Submit"}
             </Button>

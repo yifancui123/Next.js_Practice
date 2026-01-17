@@ -20,6 +20,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea"
 
 const EditTaskSchema = z.object({
   todoTitle: z
@@ -68,6 +69,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
       await editTodo({
         id: task.id,
         title: data.todoTitle,
+        //description: 
       });
       setDialogOpenEdit(false);
       router.refresh();
@@ -92,15 +94,22 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 
   return (
     <TableRow>
-      <TableCell className="w-full">{task.title}</TableCell>
-      <TableCell className="flex gap-5">
+      <TableCell className="w-1/2 align-middle">{task.title}</TableCell>
+      <TableCell className="w-1/2 align-middle">{task.description}</TableCell>
+      <TableCell className="align-middle whitespace-nowrap">
+        <div className="flex items-center gap-2">
+          <CiEdit
+            onClick={() => setDialogOpenEdit(true)}
+            className="text-blue-500 hover:text-blue-700 cursor-pointer"
+            size={18}
+          />
 
-        <CiEdit
-          onClick={() => setDialogOpenEdit(true)}
-          className="text-blue-500 hover:text-blue-700 cursor-pointer"
-          size={18}
-        />
-
+          <FaRegTrashCan
+            onClick={() => setDialogOpenDelete(true)}
+            className="text-red-500 hover:text-red-700 cursor-pointer"
+            size={18}
+          />
+        </div>
         <Dialog open={dialogOpenEdit} onOpenChange={setDialogOpenEdit}>
           <DialogContent>
             <DialogHeader>
@@ -125,12 +134,6 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
             </form>
           </DialogContent>
         </Dialog>
-
-        <FaRegTrashCan
-          onClick={() => setDialogOpenDelete(true)}
-          className="text-red-500 hover:text-red-700 cursor-pointer"
-          size={18}
-        />
 
         <Dialog open={dialogOpenDelete} onOpenChange={setDialogOpenDelete}>
           <DialogContent>
