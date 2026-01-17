@@ -20,12 +20,17 @@ import { Textarea } from "@/components/ui/textarea";
 
 
 const AddTaskSchema = z.object ({
-    todoTitle: z
-      .string()
+  todoTitle: 
+    z.string()
       .min(2, "Todo title must be at least 2 characters")
       .max(50, "Todo title must be less than 50 characters")
+      .trim(),
+  description: 
+    z.string()
+      .max(200, "Description must be less than 200 characters")
       .trim()
-  });
+});
+
 
 type AddTaskFormData = z.infer<typeof AddTaskSchema>;
 
@@ -48,7 +53,7 @@ const AddTask = () => {
       await addTodo({
         id: uuidv4(),
         title: data.todoTitle,
-        //description:
+        description: data.description
       });
       reset();
       setDialogOpen(false);
@@ -85,7 +90,7 @@ const AddTask = () => {
               )
             }
 
-            <Textarea placeholder="Add your description here." disabled />
+            <Textarea placeholder="Add your description here." {...register("description")} />
 
             
             <Button type="submit" disabled={isSubmitting}>

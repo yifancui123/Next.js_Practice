@@ -27,6 +27,10 @@ const EditTaskSchema = z.object({
     .string()
     .min(2, "Todo title must be at least 2 characters")
     .max(50, "Todo title must be less than 50 characters")
+    .trim(),
+  description: z
+    .string()
+    .max(200, "Description must be less than 50 characters")
     .trim()
 });
 
@@ -53,23 +57,27 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   } = useForm<EditTaskFormData>({
     resolver: zodResolver(EditTaskSchema),
     defaultValues: {
-      todoTitle: task.title || ""
+      todoTitle: task.title || "",
+      description: task.description || ""
     }
   });
 
   // Reset form with current task title when dialog opens
   useEffect(() => {
     if (dialogOpenEdit) {
-      reset({ todoTitle: task.title || "" });
+      reset({ 
+        todoTitle: task.title || "", 
+        description: task.description || ""  
+      });
     }
-  }, [dialogOpenEdit, task.title, reset]);
+  }, [dialogOpenEdit, task.title, task.description, reset]);
 
   const onSubmit = async (data: EditTaskFormData) => {
     try{
       await editTodo({
         id: task.id,
         title: data.todoTitle,
-        //description: 
+        description: data.description
       });
       setDialogOpenEdit(false);
       router.refresh();
@@ -128,6 +136,9 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
                   {errors.todoTitle.message}
                 </p>
               )}
+
+              <Textarea placeholder="Edit your description here." {...register("description")} />
+
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Saving..." : "Save"}
               </Button>
