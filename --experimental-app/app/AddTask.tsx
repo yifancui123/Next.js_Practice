@@ -17,6 +17,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 const AddTaskSchema = z.object ({
@@ -48,19 +49,24 @@ const AddTask = () => {
     resolver: zodResolver(AddTaskSchema),
   });
 
-  const onSubmit = async (data: AddTaskFormData) => {
-    try{
-      await addTodo({
+  const queryClient = useQueryClient();
+  const addMutation = useMutation({
+    mutationFn: addTodo,
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: [ "todos" ]});
+      setDialogOpen(false);
+    },
+    onError: ()=>{
+      alert("Failed to edit task, please try again.");
+    }
+  })
+
+  const onSubmit = (data: AddTaskFormData) => {
+    addMutation.mutate({
         id: uuidv4(),
         title: data.todoTitle,
         description: data.description
       });
-      reset();
-      setDialogOpen(false);
-      router.refresh();
-    }catch(error){
-      alert("Failed to add task, please try again.");
-    }
   }
 
   return(
@@ -80,7 +86,7 @@ const AddTask = () => {
               placeholder="Enter todo title"
               className="w-full"
               {...register("todoTitle")} 
-              disabled={isSubmitting}
+              disabled={addMutation.isPending}
             />
             {
               errors.todoTitle && (
@@ -92,9 +98,8 @@ const AddTask = () => {
 
             <Textarea placeholder="Add your description here." {...register("description")} />
 
-            
-            <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Adding..." : "Submit"}
+            <Button type="submit" disabled={addMutation.isPending}>
+                {addMutation.isPending ? "Adding..." : "Submit"}
             </Button>
           </form>
         </DialogContent>

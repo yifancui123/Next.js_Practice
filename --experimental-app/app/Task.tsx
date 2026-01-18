@@ -43,11 +43,10 @@ interface TaskProps {
 }
 
 const Task: React.FC<TaskProps> = ( {task} ) => {
-  const router = useRouter();
   const [dialogOpenEdit, setDialogOpenEdit] = useState<boolean>(false);
   const [dialogOpenDelete, setDialogOpenDelete] = useState<boolean>(false);
   //Add Loading State for Delete Button
-  const [isDeleting, setIsDeleting] = useState(false);
+
 
 
   const {
@@ -74,7 +73,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   }, [dialogOpenEdit, task.title, task.description, reset]);
 
   const queryClient = useQueryClient();
-  const {mutate, isPending} = useMutation({
+  const editMutation = useMutation({
     mutationFn: editTodo,
     onSuccess:()=>{
       queryClient.invalidateQueries({ queryKey: [ "todos" ]});
@@ -86,27 +85,22 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   });
 
   const onSubmit = (data: EditTaskFormData) => 
-      mutate({
+      editMutation.mutate({
         id: task.id,
         title: data.todoTitle,
         description: data.description
       });
 
-  const handleDeleteTask = async (id: string) => {
-    setIsDeleting(true);
-    try{
-      await deleteTodo(id);
+  const deleteMutation = useMutation({
+    mutationFn: deleteTodo,
+    onSuccess: ()=>{
+      queryClient.invalidateQueries({ queryKey: [ "todos" ]});
       setDialogOpenDelete(false);
-      router.refresh();
-    }catch(error){
+    },
+    onError:()=>{
       alert("Failed to delete task, please try again.");
-    } finally {
-    setIsDeleting(false);
     }
-  }
-  // const{data, isPen} = useMutation(
-  //   mutationFn: deleteTodo,
-  // )
+  })
   
 
   return (
@@ -138,7 +132,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
                 placeholder="Type Here"
                 className="w-full"
                 {...register("todoTitle")}
-                disabled={isSubmitting}
+                disabled={editMutation.isPending}
               />
               {errors.todoTitle && (
                 <p className="text-sm text-red-500">
@@ -148,8 +142,8 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 
               <Textarea placeholder="Edit your description here." {...register("description")} />
 
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save"}
+              <Button type="submit" disabled={editMutation.isPending}>
+                {editMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </form>
           </DialogContent>
@@ -168,10 +162,10 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
                 variant="outline">
                 Cancel
               </Button>
-              <Button onClick={() => handleDeleteTask(task.id)} 
+              <Button onClick={() => deleteMutation.mutate(task.id)} 
                 variant="destructive" 
-                disabled={isDeleting}>
-                {isDeleting ? "Deleting..." : "Delete"}
+                disabled={deleteMutation.isPending}>
+                {deleteMutation.isPending ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </DialogContent>
