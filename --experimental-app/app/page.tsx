@@ -1,17 +1,13 @@
 "use client";
 
-import { getAllTodos } from "@/api";
 import TodoList from "./TodoList";
 import AddTask from "./AddTask";
-import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner"
+import { useTodos } from "./hook/hooks";
 
 
 export default function Home(){
- const { data:tasks, isLoading, error} = useQuery({
-  queryKey: ["todos"],
-  queryFn: getAllTodos
- });
+ const { data:tasks, isLoading, error} = useTodos();
 
 if (isLoading) return (
   <div className="flex items-center gap-4">

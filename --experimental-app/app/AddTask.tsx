@@ -2,8 +2,6 @@
 
 import { IoAddCircle } from "react-icons/io5";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { addTodo } from "@/api";
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +15,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAddTodos } from "./hook/hooks";
 
 
 const AddTaskSchema = z.object ({
@@ -36,7 +34,6 @@ const AddTaskSchema = z.object ({
 type AddTaskFormData = z.infer<typeof AddTaskSchema>;
 
 const AddTask = () => {
-  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   
 
@@ -49,24 +46,21 @@ const AddTask = () => {
     resolver: zodResolver(AddTaskSchema),
   });
 
-  const queryClient = useQueryClient();
-  const addMutation = useMutation({
-    mutationFn: addTodo,
-    onSuccess:()=>{
-      queryClient.invalidateQueries({ queryKey: [ "todos" ]});
-      setDialogOpen(false);
-    },
-    onError: ()=>{
-      alert("Failed to edit task, please try again.");
-    }
-  })
-
+  const addMutation = useAddTodos();
   const onSubmit = (data: AddTaskFormData) => {
-    addMutation.mutate({
+    addMutation.mutate(
+      {
         id: uuidv4(),
         title: data.todoTitle,
         description: data.description
-      });
+      },
+      {
+        onSuccess: () => {
+          setDialogOpen(false);
+          reset();
+        }
+      }
+    );
   }
 
   return(

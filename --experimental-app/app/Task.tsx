@@ -4,8 +4,6 @@ import { ITask } from "@/types/tasks";
 import { CiEdit } from "react-icons/ci";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { deleteTodo, editTodo } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -21,7 +19,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea"
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDeleteTodos, useEditTodos } from "./hook/hooks";
 
 const EditTaskSchema = z.object({
   todoTitle: z
@@ -47,8 +45,6 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   const [dialogOpenDelete, setDialogOpenDelete] = useState<boolean>(false);
   //Add Loading State for Delete Button
 
-
-
   const {
     register,
     handleSubmit: rhfHandleSubmit,
@@ -72,36 +68,25 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
     }
   }, [dialogOpenEdit, task.title, task.description, reset]);
 
-  const queryClient = useQueryClient();
-  const editMutation = useMutation({
-    mutationFn: editTodo,
-    onSuccess:()=>{
-      queryClient.invalidateQueries({ queryKey: [ "todos" ]});
-      setDialogOpenEdit(false);
-    },
-    onError: ()=>{
-      alert("Failed to edit task, please try again.");
-    }
-  });
 
-  const onSubmit = (data: EditTaskFormData) => 
-      editMutation.mutate({
+  const editMutation = useEditTodos();
+
+  const onSubmit = (data: EditTaskFormData) => {
+    editMutation.mutate(
+      {
         id: task.id,
         title: data.todoTitle,
         description: data.description
-      });
+      },
+      {
+        onSuccess: () => {
+          setDialogOpenEdit(false);
+        }
+      }
+    );
+  }
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteTodo,
-    onSuccess: ()=>{
-      queryClient.invalidateQueries({ queryKey: [ "todos" ]});
-      setDialogOpenDelete(false);
-    },
-    onError:()=>{
-      alert("Failed to delete task, please try again.");
-    }
-  })
-  
+  const deleteMutation = useDeleteTodos();
 
   return (
     <TableRow>
@@ -162,8 +147,13 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
                 variant="outline">
                 Cancel
               </Button>
-              <Button onClick={() => deleteMutation.mutate(task.id)} 
-                variant="destructive" 
+              <Button
+                onClick={() => deleteMutation.mutate(task.id, {
+                  onSuccess: () => {
+                    setDialogOpenDelete(false);
+                  }
+                })}
+                variant="destructive"
                 disabled={deleteMutation.isPending}>
                 {deleteMutation.isPending ? "Deleting..." : "Delete"}
               </Button>
@@ -177,3 +167,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 };
 
 export default Task;
+
+function onSuccess(dialogOpenEdit: boolean) {
+  throw new Error("Function not implemented.");
+}
