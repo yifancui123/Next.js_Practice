@@ -1,15 +1,7 @@
-import { addTodo, deleteTodo, editTodo, getAllTodos } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-// Reader hook
-export const useTodos = ()=>{
-return (useQuery({
-  queryKey: ["todos"],
-  queryFn: getAllTodos
-}));
-} 
-
 //Create hooks
+
+import { addTodo, deleteTodo, editTodo } from "@/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useAddTodos = ()=>{
   const queryClient = useQueryClient();

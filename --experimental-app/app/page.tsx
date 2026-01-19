@@ -3,18 +3,18 @@
 import TodoList from "./TodoList";
 import AddTask from "./AddTask";
 import { Spinner } from "@/components/ui/spinner"
-import { useTodos } from "./hook/hooks";
+import { useTodos } from "./hook/readerHook";
 
 
 export default function Home(){
- const { data:tasks, isLoading, error} = useTodos();
+  const useQuery = useTodos();
 
-if (isLoading) return (
+if (useQuery.isLoading) return (
   <div className="flex items-center gap-4">
       <Spinner />
     </div>
 );
-if (error) return <div>Error loading tasks</div>;
+if (useQuery.error) return <div>Error loading tasks</div>;
 
  return(
    <main className="max-w-4xl mx-auto mt-4">
@@ -22,7 +22,7 @@ if (error) return <div>Error loading tasks</div>;
        <h1 className="text-2xl font-bold">Todo List App</h1>
        <AddTask/>
      </div>
-     <TodoList tasks={ tasks || []}/>
+     <TodoList tasks={ useQuery.data || []}/>
    </main>
  );
 }

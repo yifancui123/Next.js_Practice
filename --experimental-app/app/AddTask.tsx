@@ -15,7 +15,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
-import { useAddTodos } from "./hook/hooks";
+import { useAddTodos } from "./hook/mutations";
 
 
 const AddTaskSchema = z.object ({

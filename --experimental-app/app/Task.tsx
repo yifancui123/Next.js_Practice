@@ -19,7 +19,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea"
-import { useDeleteTodos, useEditTodos } from "./hook/hooks";
+import { useDeleteTodos, useEditTodos } from "./hook/mutations";
 
 const EditTaskSchema = z.object({
   todoTitle: z
@@ -48,7 +48,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
   const {
     register,
     handleSubmit: rhfHandleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<EditTaskFormData>({
     resolver: zodResolver(EditTaskSchema),
