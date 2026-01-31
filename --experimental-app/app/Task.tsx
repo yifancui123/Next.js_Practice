@@ -3,9 +3,7 @@
 import { ITask } from "@/types/tasks";
 import { CiEdit } from "react-icons/ci";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { deleteTodo, editTodo } from "@/api";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -20,12 +18,18 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea"
+import { useDeleteTodos, useEditTodos } from "./hook/mutations";
 
 const EditTaskSchema = z.object({
   todoTitle: z
     .string()
     .min(2, "Todo title must be at least 2 characters")
     .max(50, "Todo title must be less than 50 characters")
+    .trim(),
+  description: z
+    .string()
+    .max(200, "Description must be less than 50 characters")
     .trim()
 });
 
@@ -37,71 +41,71 @@ interface TaskProps {
 }
 
 const Task: React.FC<TaskProps> = ( {task} ) => {
-  const router = useRouter();
   const [dialogOpenEdit, setDialogOpenEdit] = useState<boolean>(false);
   const [dialogOpenDelete, setDialogOpenDelete] = useState<boolean>(false);
   //Add Loading State for Delete Button
-  const [isDeleting, setIsDeleting] = useState(false);
-
 
   const {
     register,
     handleSubmit: rhfHandleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<EditTaskFormData>({
     resolver: zodResolver(EditTaskSchema),
     defaultValues: {
-      todoTitle: task.title || ""
+      todoTitle: task.title || "",
+      description: task.description || ""
     }
   });
 
-  // Reset form with current task title when dialog opens
-  useEffect(() => {
-    if (dialogOpenEdit) {
-      reset({ todoTitle: task.title || "" });
+    const resetDialog = (open:boolean) => {
+      setDialogOpenEdit(open);
+      if (!open){
+        reset({
+          todoTitle: task.title || "",
+          description: task.description || ""
+        });
+      }
     }
-  }, [dialogOpenEdit, task.title, reset]);
 
-  const onSubmit = async (data: EditTaskFormData) => {
-    try{
-      await editTodo({
+  const editMutation = useEditTodos();
+
+  const onSubmit = (data: EditTaskFormData) => {
+    editMutation.mutate(
+      {
         id: task.id,
         title: data.todoTitle,
-      });
-      setDialogOpenEdit(false);
-      router.refresh();
-    }catch(error){
-      alert("Failed to edit task, please try again.");
-    }
+        description: data.description
+      },
+      {
+        onSuccess: () => {
+          setDialogOpenEdit(false);
+        }
+      }
+    );
   }
 
-  const handleDeleteTask = async (id: string) => {
-    setIsDeleting(true);
-    try{
-      await deleteTodo(id);
-      setDialogOpenDelete(false);
-      router.refresh();
-    }catch(error){
-      alert("Failed to delete task, please try again.");
-    } finally {
-    setIsDeleting(false);
-    }
-  }
-  
+  const deleteMutation = useDeleteTodos();
 
   return (
     <TableRow>
-      <TableCell className="w-full">{task.title}</TableCell>
-      <TableCell className="flex gap-5">
+      <TableCell className="w-1/2 align-middle">{task.title}</TableCell>
+      <TableCell className="w-1/2 align-middle">{task.description}</TableCell>
+      <TableCell className="align-middle whitespace-nowrap">
+        <div className="flex items-center gap-2">
+          <CiEdit
+            onClick={() => setDialogOpenEdit(true)}
+            className="text-blue-500 hover:text-blue-700 cursor-pointer"
+            size={18}
+          />
 
-        <CiEdit
-          onClick={() => setDialogOpenEdit(true)}
-          className="text-blue-500 hover:text-blue-700 cursor-pointer"
-          size={18}
-        />
-
-        <Dialog open={dialogOpenEdit} onOpenChange={setDialogOpenEdit}>
+          <FaRegTrashCan
+            onClick={() => setDialogOpenDelete(true)}
+            className="text-red-500 hover:text-red-700 cursor-pointer"
+            size={18}
+          />
+        </div>
+        <Dialog open={dialogOpenEdit} onOpenChange={resetDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Task</DialogTitle>
@@ -112,25 +116,22 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
                 placeholder="Type Here"
                 className="w-full"
                 {...register("todoTitle")}
-                disabled={isSubmitting}
+                disabled={editMutation.isPending}
               />
               {errors.todoTitle && (
                 <p className="text-sm text-red-500">
                   {errors.todoTitle.message}
                 </p>
               )}
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save"}
+
+              <Textarea placeholder="Edit your description here." {...register("description")} />
+
+              <Button type="submit" disabled={editMutation.isPending}>
+                {editMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
-
-        <FaRegTrashCan
-          onClick={() => setDialogOpenDelete(true)}
-          className="text-red-500 hover:text-red-700 cursor-pointer"
-          size={18}
-        />
 
         <Dialog open={dialogOpenDelete} onOpenChange={setDialogOpenDelete}>
           <DialogContent>
@@ -145,10 +146,15 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
                 variant="outline">
                 Cancel
               </Button>
-              <Button onClick={() => handleDeleteTask(task.id)} 
-                variant="destructive" 
-                disabled={isDeleting}>
-                {isDeleting ? "Deleting..." : "Delete"}
+              <Button
+                onClick={() => deleteMutation.mutate(task.id, {
+                  onSuccess: () => {
+                    setDialogOpenDelete(false);
+                  }
+                })}
+                variant="destructive"
+                disabled={deleteMutation.isPending}>
+                {deleteMutation.isPending ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </DialogContent>

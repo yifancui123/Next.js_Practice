@@ -13,11 +13,18 @@ interface TodoListProps {
 }
 
 const TodoList: React.FC<TodoListProps> = ( {tasks} ) => {
+  if(tasks.length === 0){
+    return <div className="text-center py-8">
+      No tasks yet.
+    </div>
+  }
+  
   return(
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Tasks</TableHead>
+          <TableHead>Descriptions</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>

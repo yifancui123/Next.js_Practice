@@ -2,8 +2,6 @@
 
 import { IoAddCircle } from "react-icons/io5";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { addTodo } from "@/api";
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,20 +14,26 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
+import { useAddTodos } from "./hook/mutations";
 
 
 const AddTaskSchema = z.object ({
-    todoTitle: z
-      .string()
+  todoTitle: 
+    z.string()
       .min(2, "Todo title must be at least 2 characters")
       .max(50, "Todo title must be less than 50 characters")
+      .trim(),
+  description: 
+    z.string()
+      .max(200, "Description must be less than 200 characters")
       .trim()
-  });
+});
+
 
 type AddTaskFormData = z.infer<typeof AddTaskSchema>;
 
 const AddTask = () => {
-  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   
 
@@ -42,18 +46,21 @@ const AddTask = () => {
     resolver: zodResolver(AddTaskSchema),
   });
 
-  const onSubmit = async (data: AddTaskFormData) => {
-    try{
-      await addTodo({
+  const addMutation = useAddTodos();
+  const onSubmit = (data: AddTaskFormData) => {
+    addMutation.mutate(
+      {
         id: uuidv4(),
         title: data.todoTitle,
-      });
-      reset();
-      setDialogOpen(false);
-      router.refresh();
-    }catch(error){
-      alert("Failed to add task, please try again.");
-    }
+        description: data.description
+      },
+      {
+        onSuccess: () => {
+          setDialogOpen(false);
+          reset();
+        }
+      }
+    );
   }
 
   return(
@@ -73,7 +80,7 @@ const AddTask = () => {
               placeholder="Enter todo title"
               className="w-full"
               {...register("todoTitle")} 
-              disabled={isSubmitting}
+              disabled={addMutation.isPending}
             />
             {
               errors.todoTitle && (
@@ -82,8 +89,11 @@ const AddTask = () => {
                 </p>
               )
             }
-            <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Adding..." : "Submit"}
+
+            <Textarea placeholder="Add your description here." {...register("description")} />
+
+            <Button type="submit" disabled={addMutation.isPending}>
+                {addMutation.isPending ? "Adding..." : "Submit"}
             </Button>
           </form>
         </DialogContent>

@@ -1,11 +1,20 @@
-import { getAllTodos } from "@/api";
+"use client";
+
 import TodoList from "./TodoList";
 import AddTask from "./AddTask";
+import { Spinner } from "@/components/ui/spinner"
+import { useTodos } from "./hook/readerHook";
 
 
-export default async function Home(){
- const tasks = await getAllTodos();
+export default function Home(){
+  const useQuery = useTodos();
 
+if (useQuery.isLoading) return (
+  <div className="flex items-center gap-4">
+      <Spinner />
+    </div>
+);
+if (useQuery.error) return <div>Error loading tasks</div>;
 
  return(
    <main className="max-w-4xl mx-auto mt-4">
@@ -13,7 +22,7 @@ export default async function Home(){
        <h1 className="text-2xl font-bold">Todo List App</h1>
        <AddTask/>
      </div>
-     <TodoList tasks={tasks}/>
+     <TodoList tasks={ useQuery.data || []}/>
    </main>
  );
 }
