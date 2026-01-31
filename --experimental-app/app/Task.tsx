@@ -49,14 +49,24 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
     register,
     handleSubmit: rhfHandleSubmit,
     formState: { errors },
+    reset,
   } = useForm<EditTaskFormData>({
     resolver: zodResolver(EditTaskSchema),
-    values: dialogOpenEdit ? {
+    defaultValues: {
       todoTitle: task.title || "",
       description: task.description || ""
-    } : undefined
+    }
   });
 
+    const resetDialog = (open:boolean) => {
+      setDialogOpenEdit(open);
+      if (!open){
+        reset({
+          todoTitle: task.title || "",
+          description: task.description || ""
+        });
+      }
+    }
 
   const editMutation = useEditTodos();
 
@@ -95,7 +105,7 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
             size={18}
           />
         </div>
-        <Dialog open={dialogOpenEdit} onOpenChange={setDialogOpenEdit}>
+        <Dialog open={dialogOpenEdit} onOpenChange={resetDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Task</DialogTitle>
