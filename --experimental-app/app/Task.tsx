@@ -3,7 +3,7 @@
 import { ITask } from "@/types/tasks";
 import { CiEdit } from "react-icons/ci";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -49,24 +49,13 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
     register,
     handleSubmit: rhfHandleSubmit,
     formState: { errors },
-    reset,
   } = useForm<EditTaskFormData>({
     resolver: zodResolver(EditTaskSchema),
-    defaultValues: {
+    values: dialogOpenEdit ? {
       todoTitle: task.title || "",
       description: task.description || ""
-    }
+    } : undefined
   });
-
-  // Reset form with current task title when dialog opens
-  useEffect(() => {
-    if (dialogOpenEdit) {
-      reset({ 
-        todoTitle: task.title || "", 
-        description: task.description || ""  
-      });
-    }
-  }, [dialogOpenEdit, task.title, task.description, reset]);
 
 
   const editMutation = useEditTodos();
@@ -167,7 +156,3 @@ const Task: React.FC<TaskProps> = ( {task} ) => {
 };
 
 export default Task;
-
-function onSuccess(dialogOpenEdit: boolean) {
-  throw new Error("Function not implemented.");
-}
